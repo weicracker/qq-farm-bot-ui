@@ -4,6 +4,7 @@ import { storeToRefs } from 'pinia'
 import { computed, onMounted, ref, watch } from 'vue'
 import ConfirmModal from '@/components/ConfirmModal.vue'
 import LandCard from '@/components/LandCard.vue'
+import StealAllFriends from '@/components/StealAllFriends.vue'
 import { useAccountStore } from '@/stores/account'
 import { useFriendStore } from '@/stores/friend'
 import { useStatusStore } from '@/stores/status'
@@ -358,6 +359,9 @@ function formatInteractTime(timestamp: number) {
         >
       </div>
     </div>
+
+    <!-- 一键偷取所有好友组件 -->
+    <StealAllFriends v-if="status?.connection?.connected && currentAccountId && friends.length > 0" @refresh="loadFriends" />
 
     <div v-if="status?.connection?.connected && currentAccountId" class="mb-6 rounded-lg bg-white p-4 shadow dark:bg-gray-800">
       <div

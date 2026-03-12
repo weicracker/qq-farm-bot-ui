@@ -893,6 +893,35 @@ function startAdminServer(dataProvider) {
         }
     });
 
+    // API: 白萝卜计数器状态
+    app.get('/api/radish-counter', async (req, res) => {
+        const id = getAccId(req);
+        if (!id) return res.status(400).json({ ok: false, error: 'Missing x-account-id' });
+        try {
+            const { getRadishPlanter } = require('../services/radishPlanter');
+            const radishPlanter = getRadishPlanter();
+            const data = radishPlanter.getState();
+            res.json({ ok: true, data });
+        } catch (e) {
+            handleApiError(res, e);
+        }
+    });
+
+    // API: 重置白萝卜计数器
+    app.post('/api/radish-counter/reset', async (req, res) => {
+        const id = getAccId(req);
+        if (!id) return res.status(400).json({ ok: false, error: 'Missing x-account-id' });
+        try {
+            const { getRadishPlanter } = require('../services/radishPlanter');
+            const radishPlanter = getRadishPlanter();
+            radishPlanter.requestReset();
+            const data = radishPlanter.getState();
+            res.json({ ok: true, data, message: '下次种植时将从0开始计数' });
+        } catch (e) {
+            handleApiError(res, e);
+        }
+    });
+
     // ============ QR Code Login APIs (无需账号选择) ============
     // 这些接口不需要 authRequired 也能调用（用于登录流程）
     app.post('/api/qr/create', async (req, res) => {

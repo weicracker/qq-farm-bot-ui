@@ -6,6 +6,7 @@ const protobuf = require('protobufjs');
 const { CONFIG, PlantPhase, PHASE_NAMES } = require('../config/config');
 const { getPlantNameBySeedId, getPlantName, getPlantExp, formatGrowTime, getPlantGrowTime, getAllSeeds, getPlantById, getPlantBySeedId, getSeedImageBySeedId } = require('../config/gameConfig');
 const { isAutomationOn, getPreferredSeed, getAutomation, getPlantingStrategy, getBagSeedPriority, setPlantingStrategy } = require('../models/store');
+const { getRadishPlanter } = require('./radishPlanter');
 const { sendMsgAsync, getUserState, networkEvents, getWsErrorState } = require('../utils/network');
 const { types } = require('../utils/proto');
 const { toLong, toNum, getServerTimeSec, toTimeSec, log, logWarn, sleep } = require('../utils/utils');
@@ -840,19 +841,43 @@ async function autoPlantEmptyLands(deadLandIds, emptyLandIds) {
 
     if (landsToPlant.length === 0) return;
 
+    // 2. 白萝卜优先种植检查
+    const radishPlanter = getRadishPlanter();
+    if (radishPlanter.shouldPlantRadish()) {
+        // 延迟导入避免循环依赖
+        const { plantRadishSeeds } = require('./radishPlanter');
+        const remaining = radishPlanter.getRemainingCount();
+        const toPlantCount = Math.min(landsToPlant.length, remaining);
+        if (toPlantCount > 0) {
+            log('白萝卜', `优先种植白萝卜，剩余需种: ${remaining} 块，当前空地: ${landsToPlant.length} 块`, {
+                module: 'farm', event: 'radish_plant_check', remaining, emptyLands: landsToPlant.length
+            });
+            const planted = await plantRadishSeeds(landsToPlant, toPlantCount, state);
+            if (planted > 0) {
+                radishPlanter.recordPlant(planted);
+                // 移除已种植的地块
+                landsToPlant.splice(0, planted);
+            }
+        }
+        // 如果白萝卜已种完或空地用完，检查是否继续常规种植
+        if (landsToPlant.length === 0 || !radishPlanter.shouldPlantRadish()) {
+            return;
+        }
+    }
+
     const strategy = getPlantingStrategy();
     log('种植', `当前种植策略: ${strategy}`, {
         module: 'farm', event: 'plant_strategy', strategy
     });
 
-    // 2. 背包种子优先模式
+    // 3. 背包种子优先模式
     if (strategy === 'bag_priority') {
         const planted = await plantFromBagSeeds(landsToPlant);
         if (planted) return;
         // 背包种子用完或空地不足，继续检查是否需要切换策略
     }
 
-    // 3. 非背包优先模式，或背包种子已用完，从商店购买
+    // 4. 非背包优先模式，或背包种子已用完，从商店购买
     await plantFromShop(landsToPlant, state);
 }
 
@@ -1602,9 +1627,14 @@ module.exports = {
     getAllLands,
     getLandsDetail,
     getAvailableSeeds,
-    runFarmOperation, // 导出新函数
+    runFarmOperation,
     runFertilizerByConfig,
     buildLandMap,
     getDisplayLandContext,
     isOccupiedSlaveLand,
+    // 导出白萝卜种植所需的函数
+    getShopInfo,
+    buyGoods,
+    plantSeeds,
+    recordOperation,
 };

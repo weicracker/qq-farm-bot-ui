@@ -3,6 +3,7 @@ import { useIntervalFn } from '@vueuse/core'
 import { storeToRefs } from 'pinia'
 import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue'
 import ConfirmModal from '@/components/ConfirmModal.vue'
+import RadishCounter from '@/components/RadishCounter.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
 import BaseInput from '@/components/ui/BaseInput.vue'
 import BaseSelect from '@/components/ui/BaseSelect.vue'
@@ -707,6 +708,9 @@ useIntervalFn(updateCountdowns, 1000)
             </div>
           </div>
         </div>
+
+        <!-- Radish Counter -->
+        <RadishCounter />
 
         <!-- Operations Grid -->
         <div class="flex-1 rounded-lg bg-white p-4 shadow dark:bg-gray-800">
