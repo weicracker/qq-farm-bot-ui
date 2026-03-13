@@ -1026,17 +1026,8 @@ async function autoPlantEmptyLands(deadLandIds, emptyLandIds) {
 
     // 2. 白萝卜优先种植检查
     const radishPlanter = getRadishPlanter();
-    const radishState = radishPlanter.getState();
     
-    // 如果请求了重置，先执行重置
-    if (radishState.resetRequested) {
-        radishPlanter.performReset();
-        log('白萝卜', '检测到重置请求，计数器已重置为0', {
-            module: 'farm', event: 'radish_reset_executed'
-        });
-    }
-    
-    // 检查是否需要种植白萝卜（重置后重新检查）
+    // 检查是否需要种植白萝卜
     if (radishPlanter.shouldPlantRadish()) {
         // 延迟导入避免循环依赖
         const { plantRadishSeeds } = require('./radishPlanter');

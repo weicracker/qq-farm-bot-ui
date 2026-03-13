@@ -116,14 +116,17 @@ class RadishPlanter {
     }
 
     /**
-     * 请求重置计数器
+     * 请求重置计数器（立即执行重置）
      */
     requestReset() {
-        this.state.resetRequested = true;
+        // 立即执行重置，不再等待下次种植
+        this.state.plantedCount = 0;
+        this.state.lastPlantTime = 0;
+        this.state.resetRequested = false;
         this.saveState();
-        log('白萝卜', '已请求重置计数器，下次种植时将重新开始', {
+        log('白萝卜', '计数器已重置为 0', {
             module: 'radish',
-            event: 'reset_requested',
+            event: 'reset_done',
         });
     }
 
