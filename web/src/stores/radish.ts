@@ -17,8 +17,9 @@ export const useRadishStore = defineStore('radish', () => {
         headers: { 'x-account-id': accountId },
       })
       if (res.data?.ok) {
-        count.value = res.data.data?.count || 0
-        target.value = res.data.data?.target || 500
+        // 后端返回 plantedCount 和 targetCount
+        count.value = res.data.data?.plantedCount || 0
+        target.value = res.data.data?.targetCount || 500
       }
     }
     catch (e) {
@@ -38,8 +39,9 @@ export const useRadishStore = defineStore('radish', () => {
         headers: { 'x-account-id': accountId },
       })
       if (res.data?.ok) {
-        count.value = res.data.data?.count || 0
-        target.value = res.data.data?.target || 500
+        // 后端返回 plantedCount 和 targetCount
+        count.value = res.data.data?.plantedCount || 0
+        target.value = res.data.data?.targetCount || 500
         return true
       }
       return false

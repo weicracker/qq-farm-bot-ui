@@ -22,6 +22,7 @@ const { status } = storeToRefs(statusStore)
 
 const stealing = ref(false)
 const showResults = ref(false)
+const showFriendList = ref(false)
 const results = ref<Array<{ gid: string, name: string, count: number, success: boolean, error?: string }>>([])
 
 // 可偷取的好友列表（有成熟作物可偷）
@@ -135,8 +136,35 @@ function closeResults() {
       </button>
     </div>
 
-    <div v-if="stealableFriends.length > 0 && !showResults" class="mt-3 text-sm text-gray-500 dark:text-gray-400">
-      可偷取 {{ stealableFriends.length }} 位好友，预计获得 {{ totalStealable }} 个作物
+    <!-- 可偷好友统计与列表 -->
+    <div v-if="stealableFriends.length > 0 && !showResults" class="mt-3">
+      <button
+        class="flex w-full items-center justify-between rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-600 transition hover:bg-gray-100 dark:bg-gray-900/40 dark:text-gray-300 dark:hover:bg-gray-900/60"
+        @click="showFriendList = !showFriendList"
+      >
+        <span>可偷取 {{ stealableFriends.length }} 位好友，预计获得 {{ totalStealable }} 个作物</span>
+        <div
+          class="i-carbon-chevron-down text-lg transition-transform duration-200"
+          :class="{ 'rotate-180': showFriendList }"
+        />
+      </button>
+
+      <!-- 好友列表 -->
+      <div
+        v-show="showFriendList"
+        class="mt-2 max-h-40 overflow-y-auto rounded-lg bg-gray-50 dark:bg-gray-900/40"
+      >
+        <div
+          v-for="friend in stealableFriends"
+          :key="friend.gid"
+          class="flex items-center justify-between border-b border-gray-100 px-3 py-2 last:border-b-0 dark:border-gray-700"
+        >
+          <span class="text-sm text-gray-700 dark:text-gray-300">{{ friend.name }}</span>
+          <span class="rounded-full bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-700 dark:bg-orange-900/30 dark:text-orange-300">
+            ×{{ friend.stealNum }}
+          </span>
+        </div>
+      </div>
     </div>
 
     <!-- 结果弹窗 -->
@@ -193,4 +221,4 @@ function closeResults() {
       </div>
     </div>
   </div>
-</template>
+</template> 
